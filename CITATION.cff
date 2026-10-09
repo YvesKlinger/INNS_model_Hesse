@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the associated publication."
+title: "INNS_model_Hesse: Code for 'Integrating citizen science and state agency data expands environmental coverage in invasive species distribution models'"
+authors:
+  - family-names: "Horn"
+    given-names: "Anna"
+    affiliation: "Division of Landscape Ecology and Landscape Planning, Justus Liebig University Giessen, Germany"
+    orcid: "https://orcid.org/0009-0000-9160-9572"
+  - family-names: "Lozano"
+    given-names: "Vanessa"
+    affiliation: "Department of Agricultural Sciences, University of Sassari, Italy"
+    orcid: "https://orcid.org/0000-0001-5910-0995"
+  - family-names: "Kleinebecker"
+    given-names: "Till"
+    affiliation: "Division of Landscape Ecology and Landscape Planning, Justus Liebig University Giessen, Germany"
+    orcid: "https://orcid.org/0000-0003-1121-2861"
+  - family-names: "Klinger"
+    given-names: "Yves P."
+    affiliation: "Division of Landscape Ecology and Landscape Planning, Justus Liebig University Giessen, Germany"
+    orcid: "https://orcid.org/0000-0001-6182-2217"
+version: "1.0.0"
+license: MIT
+repository-code: "https://github.com/YvesKlinger/INNS_model_Hesse"
+keywords:
+  - invasive plants
+  - species distribution models
+  - niche overlap
+  - environmental space
+  - habitat suitability
+  - area of applicability
+preferred-citation:
+  type: article
+  title: "Integrating citizen science and state agency data expands environmental coverage in invasive species distribution models"
+  authors:
+    - family-names: "Horn"
+      given-names: "Anna"
+      orcid: "https://orcid.org/0009-0000-9160-9572"
+    - family-names: "Lozano"
+      given-names: "Vanessa"
+      orcid: "https://orcid.org/0000-0001-5910-0995"
+    - family-names: "Kleinebecker"
+      given-names: "Till"
+      orcid: "https://orcid.org/0000-0003-1121-2861"
+    - family-names: "Klinger"
+      given-names: "Yves P."
+      orcid: "https://orcid.org/0000-0001-6182-2217"
