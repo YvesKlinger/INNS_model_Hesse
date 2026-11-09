@@ -117,21 +117,54 @@ write.csv(counts, paste0(out_dir, "Occurrence_maps_counts.csv"), row.names = FAL
 print(counts)
 
 panel_labels <- counts %>%
-  mutate(label = paste0("n = ", format(n_records, big.mark = ",", trim = TRUE)))
+  mutate(label = paste0(format(n_records, big.mark = ",", trim = TRUE), " records / ",
+                        format(n_cells, big.mark = ",", trim = TRUE), " cells"))
 
-map_theme <- theme_void(base_size = 10) +
+# count classes; shades of the source colours used in Figure 1 (CS green, StAg
+# purple), starting at a mid tone so that cells with a single record stay visible
+count_breaks <- c(0, 1, 3, 10, Inf)
+count_labels <- c("1", "2–3", "4–10", "> 10")
+class_colours <- list(
+  "Citizen science (CS)" = c("#6DB562", "#448C3B", "#2A6324", "#133D10"),
+  "State agency (StAg)"  = c("#A584CF", "#7E55AE", "#5A3488", "#351A57")
+)
+fill_keys   <- unlist(lapply(source_names, function(s) paste(s, count_labels, sep = " | ")), use.names = FALSE)
+fill_values <- setNames(unlist(class_colours[source_names], use.names = FALSE), fill_keys)
+
+# major cities for orientation (WGS 84)
+cities <- data.frame(
+  name  = c("Kassel", "Marburg", "Gießen", "Fulda", "Frankfurt", "Wiesbaden", "Darmstadt"),
+  lon   = c(9.4797, 8.7667, 8.6784, 9.6808, 8.6821, 8.2398, 8.6512),
+  lat   = c(51.3127, 50.8021, 50.5841, 50.5558, 50.1109, 50.0782, 49.8728),
+  pos   = c("right", "right", "left", "right", "right", "below", "right")  # label position relative to marker
+) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  st_transform(map_crs)
+city_xy <- st_coordinates(cities)
+city_labels <- st_drop_geometry(cities) %>%
+  mutate(x = city_xy[, "X"] + c(right = 3500, left = -3500, below = 0)[pos],  # gap between marker and label (m)
+         y = city_xy[, "Y"] + c(right = 0, left = 0, below = -4500)[pos],
+         hjust = c(right = 0, left = 1, below = 0.5)[pos],
+         vjust = c(right = 0.5, left = 0.5, below = 1)[pos]) %>%
+  st_as_sf(coords = c("x", "y"), crs = map_crs)
+
+map_theme <- theme_minimal(base_size = 9) +
   theme(
-    strip.text.x = element_text(face = "italic", size = 10, margin = margin(b = 4)),
-    strip.text.y = element_text(size = 10, angle = 270, margin = margin(l = 4)),
-    panel.spacing = unit(6, "pt"),
+    panel.grid = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    strip.text.x = element_text(face = "italic", size = 10, margin = margin(b = 3)),
+    strip.text.y = element_text(size = 10, angle = 270, margin = margin(l = 3)),
+    panel.spacing.x = unit(2, "pt"),
+    panel.spacing.y = unit(8, "pt"),
     legend.position = "bottom",
-    legend.title = element_text(size = 9),
+    legend.title = element_text(size = 8.5),
     legend.text = element_text(size = 8),
+    legend.key.size = unit(0.35, "cm"),
+    legend.margin = margin(t = 0),
+    plot.margin = margin(4, 2, 2, 2),
     plot.background = element_rect(fill = "white", colour = NA)
   )
-
-label_layer <- geom_text(data = panel_labels, aes(label = label), x = -Inf, y = Inf,
-                         hjust = -0.1, vjust = 1.5, size = 3, colour = "grey20", inherit.aes = FALSE)
 
 
 #Records per 1-km cell
@@ -153,19 +186,29 @@ for (s in levels(occ_clean_all$source)) {
 }
 cells_all <- bind_rows(cell_list) %>%
   mutate(source  = factor(source, levels = source_names),
-         species = factor(species, levels = species_names))
+         species = factor(species, levels = species_names),
+         class   = cut(n, breaks = count_breaks, labels = count_labels),
+         fill_key = factor(paste(source, class, sep = " | "), levels = fill_keys)) %>%
+  arrange(n)  # cells with more records are drawn on top
 
+# Cells are outlined in their own fill colour so that single 1-km cells remain
+# visible at print size.
 p_cells <- ggplot() +
-  geom_sf(data = hesse, fill = "white", colour = "grey55", linewidth = 0.3) +
-  geom_sf(data = cells_all, aes(fill = n), colour = NA) +
-  scale_fill_gradient(low = "#6BAED6", high = "#08306B", trans = "log10",
-                      breaks = c(1, 3, 10, 30, 100),
-                      name = "Records per 1-km cell") +
-  label_layer +
+  geom_sf(data = hesse, fill = NA, colour = "grey45", linewidth = 0.3) +
+  geom_sf(data = cells_all, aes(fill = fill_key, colour = fill_key), linewidth = 0.2) +
+  geom_sf(data = cities, shape = 21, fill = "white", colour = "black", size = 1.1, stroke = 0.4) +
+  geom_sf_label(data = city_labels, aes(label = name, hjust = hjust, vjust = vjust),
+                size = 2.1, colour = "black", fontface = "bold", fill = alpha("white", 0.75),
+                label.size = 0, label.padding = unit(0.06, "lines"), label.r = unit(0, "lines")) +
+  geom_text(data = panel_labels, aes(label = label), x = -Inf, y = Inf,
+            hjust = -0.03, vjust = 1.3, size = 2.6, colour = "grey20") +
+  scale_fill_manual(values = fill_values, breaks = fill_keys, labels = rep(count_labels, length(source_names)),
+                    name = "Records per\n1-km cell", drop = FALSE) +
+  scale_colour_manual(values = fill_values, guide = "none") +
   facet_grid(source ~ species) +
   coord_sf(crs = map_crs, datum = NA) +
   map_theme +
-  guides(fill = guide_colourbar(barwidth = unit(4, "cm"), barheight = unit(0.3, "cm"), title.vjust = 0.8))
+  guides(fill = guide_legend(nrow = length(source_names), byrow = TRUE))
 
-ggsave(paste0(out_dir, "Occurrence_maps_cells.png"), p_cells, width = 18, height = 14, units = "cm", dpi = 300, bg = "white")
-ggsave(paste0(out_dir, "Occurrence_maps_cells.pdf"), p_cells, width = 18, height = 14, units = "cm")
+ggsave(paste0(out_dir, "Occurrence_maps_cells.png"), p_cells, width = 17, height = 17.5, units = "cm", dpi = 300, bg = "white")
+ggsave(paste0(out_dir, "Occurrence_maps_cells.pdf"), p_cells, width = 17, height = 17.5, units = "cm", device = cairo_pdf)
