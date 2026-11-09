@@ -58,6 +58,14 @@ map_theme <- theme_void() +
     plot.margin      = margin(1,1,1,1)    # tighter margins
   )
 
+# ------------------------ Colour scales ------------------------
+# Suitability (COM) is always shown on 0-1. Differences (CS - COM, StAg - COM)
+# use one symmetric scale for all species; |differences| > diff_lim (< 1 % of
+# cells) are shown in the end colour.
+diff_lim    <- 0.5
+diff_breaks <- c(-0.5, -0.25, 0, 0.25, 0.5)
+diff_labels <- c("≤ −0.5", "−0.25", "0", "+0.25", "≥ +0.5")
+
 # ------------------------ Storage ------------------------
 list_plot_com   <- list()
 list_plot_gbif  <- list()
@@ -102,14 +110,6 @@ for(sp_id in species_list){
   diff_gbif_st  <- st_as_stars(diff_gbif)
   diff_hlnug_st <- st_as_stars(diff_hlnug)
   
-  # --- Symmetric limits for the diff color bar (per-species) ---
-  max_abs <- max(
-    abs(c(as.vector(terra::values(diff_gbif)),
-          as.vector(terra::values(diff_hlnug)))),
-    na.rm = TRUE
-  )
-  if (!is.finite(max_abs) || max_abs == 0) max_abs <- 1
-  
   # --- Plot: COM (light grey NA background inside Hesse) ---
   p_comb <- ggplot() +
     geom_sf(data = hesse_sf_sp, fill = "lightgrey", color = NA) +
@@ -117,6 +117,7 @@ for(sp_id in species_list){
     scale_fill_viridis_c(
       name = "Suitability",
       option = "D",
+      limits = c(0, 1),
       na.value = NA,
       guide = guide_colorbar(
         direction = "vertical",
@@ -135,14 +136,14 @@ for(sp_id in species_list){
     map_theme
   list_plot_com[[sp_id]] <- p_comb
   
-  # --- Shared diff scale (VERTICAL, bigger, same size as COM legend) ---
+  # --- Shared diff scale, identical for all species ---
   diff_scale <- scale_fill_gradient2(
     low = "red", mid = "white", high = "blue",
-    midpoint = 0, limits = c(-max_abs, max_abs),
+    midpoint = 0, limits = c(-diff_lim, diff_lim),
     oob = scales::squish, na.value = NA,
     name = NULL,
-    breaks = c(-max_abs, max_abs),
-    labels = c("less suitable", "more suitable"),
+    breaks = diff_breaks,
+    labels = diff_labels,
     guide = guide_colorbar(
       direction = "vertical",
       barheight = unit(10, "lines"),
@@ -255,7 +256,7 @@ row_hlnug_no_legend <- all_plots[7:9]
 # ------------------------ Row labels ------------------------
 label_plot <- function(txt){
   ggplot() + theme_void() +
-    annotate("text", x = 0.5, y = 0.5, label = txt, size = 6, fontface = "plain") +
+    annotate("text", x = 0.5, y = 0.5, label = txt, size = 6, fontface = "plain", angle = 90) +
     theme(plot.margin = margin(0,0,0,0))
 }
 
@@ -269,8 +270,8 @@ build_row_grob <- function(label, maps_no_legend){
 }
 
 row1_grob <- build_row_grob("COM",  row_com_no_legend)
-row2_grob <- build_row_grob("CS",   row_gbif_no_legend)
-row3_grob <- build_row_grob("StAg", row_hlnug_no_legend)
+row2_grob <- build_row_grob("CS − COM",   row_gbif_no_legend)
+row3_grob <- build_row_grob("StAg − COM", row_hlnug_no_legend)
 
 # ---------- Strong vertical compression, but safe from clipping ----------
 maps_grid <- plot_grid(
@@ -300,8 +301,10 @@ df_dummy_c <- data.frame(x = 1:2, y = 1:2, z = c(0, 1))
 p_dummy_c <- ggplot(df_dummy_c, aes(x, y, fill = z)) +
   geom_raster() +
   scale_fill_viridis_c(
-    name = "Suitability",
+    name = "Suitability\n(COM)",
     option = "D",
+    limits = c(0, 1),
+    breaks = c(0, 0.25, 0.5, 0.75, 1),
     na.value = "white",
     guide = guide_colorbar(
       direction = "vertical",
@@ -317,31 +320,43 @@ p_dummy_c <- ggplot(df_dummy_c, aes(x, y, fill = z)) +
   legend_theme
 com_legend_grob <- get_legend(p_dummy_c)
 
-df_dummy_d <- data.frame(x = 1:2, y = 1:2, z = c(-1, 1))
+df_dummy_d <- data.frame(x = 1:2, y = 1:2, z = c(-diff_lim, diff_lim))
 p_diff_vertical <- ggplot(df_dummy_d, aes(x, y, fill = z)) +
   geom_raster() +
   scale_fill_gradient2(
     low = "red", mid = "white", high = "blue",
-    midpoint = 0, limits = c(-1, 1),
-    name = NULL,
-    breaks = c(-1, 1),
-    labels = c("less suitable", "more suitable"),
+    midpoint = 0, limits = c(-diff_lim, diff_lim),
+    name = "Difference in\nsuitability\n(CS or StAg\n− COM)",
+    breaks = diff_breaks,
+    labels = diff_labels,
     guide = guide_colorbar(
       direction = "vertical",
       barheight = unit(8,  "lines"),
       barwidth  = unit(1.6,"lines"),
       ticks = FALSE,
-      label.position = "right"
+      label.position = "right",
+      title.position = "top",
+      title.hjust = 0,
+      title.vjust = 2
     )
   ) +
   legend_theme
 diff_legend_grob <- get_legend(p_diff_vertical)
 
+# key for cells outside the area of applicability
+p_na_key <- ggplot(data.frame(x = 1, y = 1, k = "Outside AOA"), aes(x, y, fill = k)) +
+  geom_tile() +
+  scale_fill_manual(values = c("Outside AOA" = "lightgrey"), name = NULL,
+                    guide = guide_legend(keywidth = unit(1.6, "lines"), keyheight = unit(1.2, "lines"))) +
+  legend_theme
+na_legend_grob <- get_legend(p_na_key)
+
 legend_stack <- plot_grid(
   ggdraw() + draw_grob(com_legend_grob),
   ggdraw() + draw_grob(diff_legend_grob),
+  ggdraw() + draw_grob(na_legend_grob),
   ncol = 1,
-  rel_heights = c(1, 1.1),
+  rel_heights = c(1, 1.25, 0.3),
   align = "v",
   axis = "l"
 )
