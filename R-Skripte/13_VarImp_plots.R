@@ -361,7 +361,7 @@ if (length(plots_all) > 0) {
     dpi = 300,
     bg = "white"
   )
-  message("✅ Saved ALL-SPECIES averaged panel → ", out_all)
+  message("Saved all-species averaged panel: ", out_all)
 } else {
-  message("⚠️ No data to plot for ALL-SPECIES averaged panel.")
+  message("No data to plot for the all-species averaged panel.")
 }

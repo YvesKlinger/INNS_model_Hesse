@@ -320,7 +320,7 @@ for (sp in species_list) {
         plot.background = element_rect(fill = "white")
       )
     
-    # IMPORTANT: no coord_flip() -> Mean suitability stays on y-axis
+    # no coord_flip(): mean suitability stays on the y-axis
     cat_plots[[grp]] <- p_cat
   }
   

@@ -399,7 +399,7 @@ maps_with_header <- plot_grid(
   header_with_pad,
   maps_grid,
   ncol = 1,
-  rel_heights = c(0.10, 0.90),   # was 0.07/0.93 → now a bit more breathing room
+  rel_heights = c(0.10, 0.90),
   align = "v"
 )
 

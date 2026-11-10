@@ -1,4 +1,4 @@
-# INNS_model_Hesse — Invasive plant species distribution models
+# INNS_model_Hesse: Invasive plant species distribution models
 
 Species distribution models (SDMs) for three invasive non-native plant
 species in the German state of Hesse, comparing predictions built from
@@ -21,19 +21,19 @@ Finale_occ_Tabellen/               Final, filtered GBIF occurrence tables (CSV),
 Pseudo_absences/global/pa_area/    Areas for global pseudo-absence selection (input data, made in ArcGIS Pro)
 Model result metrics/Metrics.zip   Per-run model performance metrics (AUC, TSS, thresholds, confusion matrices)
 requirements.R                     Installs the R packages used across all scripts
-INNS_model_Hesse.Rproj             RStudio project file — open this to set the working directory
+INNS_model_Hesse.Rproj             RStudio project file (sets the working directory)
 ```
 
 ## Setup
 
 1. Open `INNS_model_Hesse.Rproj` in RStudio (this sets the working directory
-   to the project root automatically — the scripts assume they run with
+   to the project root automatically; the scripts assume they run with
    this folder, not `R-Skripte/`, as the working directory). If you're not
    using RStudio, `setwd()` into this folder manually before running
    anything; each script has a comment marking where to do this.
 2. Run `source("requirements.R")` to install the required packages.
 3. Obtain the input data this pipeline expects (not all of it ships in
-   this repository — see "Data availability" below) and recreate the
+   this repository; see "Data availability" below) and recreate the
    directory structure the scripts read from and write to (see "Required
    directory structure" below).
 
@@ -62,7 +62,7 @@ INNS_model_Hesse.Rproj             RStudio project file — open this to set the
 
 Notes on individual steps:
 
-- **01** — `occ_download()` prepares the download server-side; fetch the
+- **01**: `occ_download()` prepares the download server-side; fetch the
   archive yourself (e.g. via `occ_download_get()`). The downloads used for
   the published results are `0021796-250717081556266`
   (global, https://doi.org/10.15468/dl.ns4htj) and `0021801-250717081556266`
@@ -71,14 +71,14 @@ Notes on individual steps:
   `Occurrences/Occurrence_data_GBIF/global/0021796-250717081556266/` and
   `Occurrences/Occurrence_data_GBIF/local/0021801-250717081556266/`
   (scripts 02 and 18 read `occurrence.txt` from there).
-- **02** — Writes the filtered tables to `Occurrences/.../filtered/`
+- **02**: Writes the filtered tables to `Occurrences/.../filtered/`
   (copies of the GBIF tables in `Finale_occ_Tabellen/`); the printed
   `table(...)` counts are the numbers in App. 2. To run script 10 without
   re-running script 02, copy `Finale_occ_Tabellen/all_species_gbif_global.csv`
   to `Occurrences/Occurrence_data_GBIF/global/filtered/` and
   `all_species_gbif_local.csv` to `Occurrences/Occurrence_data_GBIF/local/filtered/`
   (the HLNUG and combined tables have to be created with script 02).
-- **03–07** — Prepare the predictors from the raw data (see "Data
+- **03–07**: Prepare the predictors from the raw data (see "Data
   availability"). The 14 regional predictors are written to
   `Predictors/<name>_hesse.tif`; script 10 reads every `*_hesse.tif` in
   `Predictors/`, so no other `*_hesse.tif` may be placed there. The CHELSA
@@ -97,22 +97,22 @@ Notes on individual steps:
   filtered occurrences) → Buffer 20 000 m (dissolve all) → Erase of a
   1 000 m buffer → PolygonToRaster (cell centre, snapped to the CHELSA
   bio1 grid). The area is thus a ring 1–20 km around the occurrences.
-- **10** — For every extent (global / local) × data origin (gbif / hlnug /
-  combined — local only) × species: pseudo-absences, spatially-blocked
+- **10**: For every extent (global / local) × data origin (gbif / hlnug /
+  combined; local only) × species: pseudo-absences, spatially-blocked
   (local) or random (global) cross-validated GBM models with forward
   feature selection, 10 (local) / 5 (global) runs, evaluation (AUC, TSS),
   suitability rasters, AOA (`CAST::aoa`) and regression of the DI on the
   predictors in non-applicable areas. Writes all outputs to `Model_results/`.
-- **12** — Reads the per-run metrics from `Model_results/Metrics/` or, if
+- **12**: Reads the per-run metrics from `Model_results/Metrics/` or, if
   that folder does not exist, from `Model result metrics/Metrics.zip`, so
   it can be run without re-running the models. Writes all tables,
   diagnostic plots, model summaries and the App. 4.1 boxplots to
   `Model_results/Model_comparison/` (created by the script).
-- **13–17** — Read the outputs of script 10. The difference maps of
+- **13–17**: Read the outputs of script 10. The difference maps of
   script 17 are computed from suitability maps masked by each model's own
   AOA, so differences are shown only for cells inside the AOAs of both
   compared models (intersection).
-- **18** — Reads the raw GBIF download (Hesse) and the HLNUG shapefiles,
+- **18**: Reads the raw GBIF download (Hesse) and the HLNUG shapefiles,
   applies the same cleaning as script 02 but without the thinning to one
   record per 1-km cell, and maps the number of records per 1-km cell (model
   grid, `Predictors/DGM_hesse.tif`) per species and data source. Writes to `Model_results/Figures/`; the
@@ -128,7 +128,7 @@ Notes on individual steps:
   `license`); records under CC BY-NC 4.0 may not be used commercially. When
   using the tables, cite the GBIF downloads
   (https://doi.org/10.15468/dl.ns4htj, https://doi.org/10.15468/dl.865r6h).
-- **HLNUG (state agency) occurrence data**: **not included** — it may not
+- **HLNUG (state agency) occurrence data**: **not included**; it may not
   be redistributed. The data are available from the Hessian Biodiversity
   Database (HEBID) of the Hessian State Agency for Nature Conservation,
   Environment and Geology (HLNUG) on request. This also applies to the
@@ -212,7 +212,7 @@ No script is available for the following results of the manuscript:
 The code in this repository is released under the MIT License (see
 `LICENSE`). The MIT License applies to the code only. The GBIF occurrence
 records in `Finale_occ_Tabellen/` keep their original licences (CC0 1.0,
-CC BY 4.0 or CC BY-NC 4.0, column `license`) — see "Data availability and
+CC BY 4.0 or CC BY-NC 4.0, column `license`); see "Data availability and
 restrictions" above. The processed predictor layers in `Predictors/` are
 provided under CC BY 4.0; cite the original data providers as listed in
 `Predictors/SOURCES_AND_LICENCES.md`.

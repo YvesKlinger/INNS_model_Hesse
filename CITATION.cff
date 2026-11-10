@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this code or data, please cite the associated publication."
-title: "INNS_model_Hesse: Code for 'Integrating citizen science and state agency data expands environmental coverage in invasive species distribution models'"
+title: "INNS_model_Hesse: Code for 'Integrating citizen science and state agency data expands environmental coverage of occurrence data in invasive species distribution models'"
 authors:
   - family-names: "Horn"
     given-names: "Anna"
@@ -18,7 +18,7 @@ authors:
     given-names: "Yves P."
     affiliation: "Division of Landscape Ecology and Landscape Planning, Justus Liebig University Giessen, Germany"
     orcid: "https://orcid.org/0000-0001-6182-2217"
-version: "1.0.0"
+version: "1.1.0"
 license: MIT
 repository-code: "https://github.com/YvesKlinger/INNS_model_Hesse"
 keywords:
@@ -30,7 +30,7 @@ keywords:
   - area of applicability
 preferred-citation:
   type: article
-  title: "Integrating citizen science and state agency data expands environmental coverage in invasive species distribution models"
+  title: "Integrating citizen science and state agency data expands environmental coverage of occurrence data in invasive species distribution models"
   authors:
     - family-names: "Horn"
       given-names: "Anna"
