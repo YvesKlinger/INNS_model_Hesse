@@ -6,8 +6,13 @@ Occurrences/Occurrence_data_HLNUG/
 Occurrences/Occurrence_data_combined/
 Finale_occ_Tabellen/all_species_hlnug.csv
 Finale_occ_Tabellen/all_species_combined.csv
-# Environmental predictors may not be redistributed (sources in README).
-Predictors/
+# Regional predictor layers are published (CC BY 4.0, sources in
+# Predictors/SOURCES_AND_LICENCES.md); the global CHELSA layers (~3.5 GB)
+# and the raw predictor data are not.
+Predictors/*
+!Predictors/*_hesse.tif
+!Predictors/*_hesse.tif.aux.xml
+!Predictors/SOURCES_AND_LICENCES.md
 Predictors_raw/
 Predictors_all_plus_corr/
 Shape_Hesse/
